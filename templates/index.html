@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medbot Chat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <h2>💊 Medbot - Ask your medical question</h2>
+        <div id="chat-box"></div>
+        <form id="chat-form" method="post" action="/get">
+            <input type="text" id="msg" name="msg" placeholder="Enter your question here..." required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById("chat-form");
+        const chatBox = document.getElementById("chat-box");
+
+        form.addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const msg = document.getElementById("msg").value;
+            
+            const userMessage = `<div class='user-msg'><strong>You:</strong> ${msg}</div>`;
+            chatBox.innerHTML += userMessage;
+
+            const response = await fetch("/get", {
+                method: "POST",
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ msg })
+            });
+
+            const answer = await response.text();
+            const botMessage = `<div class='bot-msg'><strong>Medbot:</strong> ${answer}</div>`;
+            chatBox.innerHTML += botMessage;
+
+            form.reset();
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
+</body>
+</html>
