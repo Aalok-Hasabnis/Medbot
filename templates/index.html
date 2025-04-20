@@ -1,44 +1,246 @@
+<!-- Save as index.html or your main file -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <title>Medbot Chat</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Medbot</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #0ea5e9;
+      --primary-hover: #0284c7;
+      --bg: #f9fafb;
+      --fg: #111827;
+      --bubble-user: #e0f2fe;
+      --bubble-bot: #dcfce7;
+      --glass: rgba(255, 255, 255, 0.7);
+      --shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    [data-theme="dark"] {
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --bg: #1f2937;
+      --fg: #f9fafb;
+      --bubble-user: #1e3a8a;
+      --bubble-bot: #4e4e4e;
+      --glass: rgba(36, 36, 36, 0.8);
+      --shadow: rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--fg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+      width: 100%;
+      max-width: 600px;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      box-shadow: 0 8px 30px var(--shadow);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .chat-header {
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 22px;
+      font-weight: 600;
+      background-color: transparent;
+    }
+
+    .theme-toggle {
+      font-size: 20px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--fg);
+    }
+
+    #chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    .user-msg,
+    .bot-msg {
+      padding: 14px 18px;
+      border-radius: 20px;
+      max-width: 75%;
+      line-height: 1.5;
+      font-size: 15px;
+    }
+
+    .user-msg {
+      background-color: var(--bubble-user);
+      align-self: flex-end;
+    }
+
+    .bot-msg {
+      background-color: var(--bubble-bot);
+      align-self: flex-start;
+    }
+
+    #chat-form {
+      display: flex;
+      padding: 16px;
+      border-top: 1px solid var(--shadow);
+      background-color: transparent;
+    }
+
+    #msg {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 50px;
+      border: 1px solid var(--primary);
+      outline: none;
+      background: white;
+      transition: border-color 0.2s;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 20px;
+      margin-left: 10px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+      .chat-container {
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      #msg {
+        font-size: 14px;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="chat-container">
-        <h2>💊 Medbot - Ask your medical question</h2>
-        <div id="chat-box"></div>
-        <form id="chat-form" method="post" action="/get">
-            <input type="text" id="msg" name="msg" placeholder="Enter your question here..." required>
-            <button type="submit">Send</button>
-        </form>
+  <div class="chat-container">
+    <div class="chat-header">
+      Medbot
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
     </div>
+    <div id="chat-box">
+      <div class="message bot-msg">
+        👋 Hi, I’m Medbot! Ask me anything related to your health. I’m here to help.
+      </div>
+    </div>
+    <form id="chat-form" method="POST" action="/get">
+      <input type="text" id="msg" name="msg" placeholder="Ask a medical question..." autocomplete="off" required />
+      <button type="submit">Send</button>
+    </form>
+  </div>
 
-    <script>
-        const form = document.getElementById("chat-form");
-        const chatBox = document.getElementById("chat-box");
+  <script>
+    const form = document.getElementById("chat-form");
+    const chatBox = document.getElementById("chat-box");
+    const themeToggle = document.getElementById("theme-toggle");
 
-        form.addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const msg = document.getElementById("msg").value;
-            
-            const userMessage = `<div class='user-msg'><strong>You:</strong> ${msg}</div>`;
-            chatBox.innerHTML += userMessage;
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
+    updateThemeIcon();
 
-            const response = await fetch("/get", {
-                method: "POST",
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({ msg })
-            });
+    themeToggle.onclick = () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      updateThemeIcon();
+    };
 
-            const answer = await response.text();
-            const botMessage = `<div class='bot-msg'><strong>Medbot:</strong> ${answer}</div>`;
-            chatBox.innerHTML += botMessage;
+    function updateThemeIcon() {
+      themeToggle.textContent = document.documentElement.getAttribute('data-theme') === 'dark' ? '☀️' : '🌙';
+    }
 
-            form.reset();
-            chatBox.scrollTop = chatBox.scrollHeight;
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const msgInput = document.getElementById("msg");
+      const userMsg = msgInput.value.trim();
+      if (!userMsg) return;
+
+      addMessage(userMsg, "user-msg");
+      msgInput.value = "";
+
+      addMessage("Typing...", "bot-msg", true);
+
+      try {
+        const res = await fetch("/get", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ msg: userMsg })
         });
-    </script>
+        const reply = await res.text();
+        removeTyping();
+        addMessage(reply, "bot-msg");
+      } catch {
+        removeTyping();
+        addMessage("Sorry, something went wrong. Try again later.", "bot-msg");
+      }
+    };
+
+    function addMessage(content, type, isTyping = false) {
+      const msg = document.createElement("div");
+      msg.className = `message ${type}`;
+      msg.textContent = content;
+      msg.dataset.typing = isTyping;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function removeTyping() {
+      const typingMsg = chatBox.querySelector('[data-typing="true"]');
+      if (typingMsg) typingMsg.remove();
+    }
+  </script>
 </body>
 </html>

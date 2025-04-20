@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediBot - Your Healthcare Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Theme variables */
+        :root {
+            --bg-color: #f5f7fa;
+            --container-bg: #ffffff;
+            --text-color: #333333;
+            --secondary-text: #6c757d;
+            --primary-color: #4a90e2;
+            --primary-hover: #3a7bc8;
+            --input-bg: #ffffff;
+            --input-border: #ced4da;
+            --bot-message-bg: #e9f0f9;
+            --user-message-bg: #4a90e2;
+            --user-message-text: #ffffff;
+            --separator: #e9ecef;
+            --input-area-bg: #f8f9fa;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+        }
+
+        .dark-theme {
+            --bg-color: #1a1c23;
+            --container-bg: #282a36;
+            --text-color: #f8f8f2;
+            --secondary-text: #a4b0be;
+            --primary-color: #5c92d1;
+            --primary-hover: #7eaceb;
+            --input-bg: #2d303e;
+            --input-border: #44475a;
+            --bot-message-bg: #3a3d4f;
+            --user-message-bg: #5c92d1;
+            --user-message-text: #ffffff;
+            --separator: #44475a;
+            --input-area-bg: #2d303e;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        /* Container styles */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header styles */
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .logo-icon {
+            background-color: var(--primary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 20px;
+            transition: background-color var(--transition-speed);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            transition: color var(--transition-speed);
+        }
+
+        .header p {
+            color: var(--secondary-text);
+            font-size: 14px;
+            transition: color var(--transition-speed);
+        }
+
+        /* Theme toggle and controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 15px;
+            gap: 20px;
+        }
+
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            background-color: var(--input-area-bg);
+            border-radius: 30px;
+            padding: 5px;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+        }
+
+        .theme-icon {
+            padding: 5px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            transition: background-color var(--transition-speed);
+        }
+
+        .theme-icon svg {
+            width: 18px;
+            height: 18px;
+            color: var(--secondary-text);
+            transition: color var(--transition-speed);
+        }
+
+        .theme-icon.active {
+            background-color: var(--primary-color);
+        }
+
+        .theme-icon.active svg {
+            color: white;
+        }
+
+        .sound-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--secondary-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color var(--transition-speed);
+        }
+
+        .sound-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        .sound-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Chat container styles */
+        .chat-container {
+            flex: 1;
+            background-color: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        /* Chat messages area */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        /* Message styles */
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            align-self: flex-end;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 12px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .user-message .message-bubble {
+            background-color: var(--user-message-bg);
+            color: var(--user-message-text);
+            border-top-right-radius: 4px;
+        }
+
+        .bot-message .message-bubble {
+            background-color: var(--bot-message-bg);
+            color: var(--text-color);
+            border-top-left-radius: 4px;
+        }
+
+        .timestamp {
+            font-size: 11px;
+            color: var(--secondary-text);
+            margin-top: 5px;
+            align-self: flex-end;
+            transition: color var(--transition-speed);
+        }
+
+        .user-message .timestamp {
+            margin-right: 5px;
+        }
+
+        .bot-message .timestamp {
+            margin-left: 5px;
+            align-self: flex-start;
+        }
+
+        /* Quick replies */
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .quick-reply {
+            background-color: var(--input-area-bg);
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 16px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+
+        .quick-reply:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background-color: var(--bot-message-bg);
+            padding: 12px 15px;
+            border-radius: 18px;
+            border-top-left-radius: 4px;
+            margin-bottom: 15px;
+            color: var(--secondary-text);
+            font-size: 14px;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            animation: wave 1.3s linear infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes wave {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+
+        /* Input area styles */
+        .chat-input-container {
+            padding: 15px;
+            background-color: var(--input-area-bg);
+            border-top: 1px solid var(--separator);
+            transition: background-color var(--transition-speed), border-color var(--transition-speed);
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--input-border);
+            border-radius: 25px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            outline: none;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: border-color var(--transition-speed), background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .send-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color var(--transition-speed);
+        }
+
+        .send-button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .send-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+        }
+
+        .send-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Action buttons in input area */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-button {
+            background: none;
+            border: none;
+            color: var(--secondary-text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+        }
+
+        .action-button:hover {
+            color: var(--primary-color);
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+
+        .action-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Info text at the bottom */
+        .info-text {
+            text-align: center;
+            padding: 10px 0;
+            font-size: 12px;
+            color: var(--secondary-text);
+            transition: color var(--transition-speed);
+        }
+
+        /* Accessibility features */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
+        /* Mobile menu button for smaller screens */
+        .mobile-menu-button {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 24px;
+            padding: 5px;
+        }
+
+        /* Voice recording animation */
+        .voice-recording {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 10px;
+        }
+
+        .voice-wave {
+            width: 3px;
+            height: 20px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+            animation: voice-wave-animation 0.5s infinite alternate;
+        }
+
+        .voice-wave:nth-child(2) {
+            animation-delay: 0.2s;
+            height: 15px;
+        }
+
+        .voice-wave:nth-child(3) {
+            animation-delay: 0.4s;
+            height: 10px;
+        }
+
+        .voice-wave:nth-child(4) {
+            animation-delay: 0.6s;
+            height: 18px;
+        }
+
+        @keyframes voice-wave-animation {
+            from { transform: scaleY(0.5); }
+            to { transform: scaleY(1); }
+        }
+
+        /* Media queries for responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                height: 100vh;
+            }
+
+            .message {
+                max-width: 90%;
+            }
+
+            .controls {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .chat-input {
+                padding: 10px;
+            }
+
+            .send-button {
+                width: 40px;
+                height: 40px;
+            }
+
+            .mobile-menu-button {
+                display: block;
+            }
+
+            .controls {
+                display: none;
+                width: 100%;
+                margin-top: 10px;
+            }
+
+            .controls.show {
+                display: flex;
+                animation: slideDown 0.3s ease-in-out;
+            }
+
+            @keyframes slideDown {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">M</div>
+                <div class="logo-text">MediBot</div>
+            </div>
+            <p>Your trusted healthcare assistant</p>
+            
+            <button class="mobile-menu-button" id="mobile-menu-button" aria-label="Open menu">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            
+            <div class="controls" id="controls">
+                <div class="theme-toggle" id="theme-toggle" role="radiogroup" aria-label="Theme selection">
+                    <div class="theme-icon active" id="light-theme-toggle" role="radio" aria-checked="true" tabindex="0" aria-label="Light theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </div>
+                    <div class="theme-icon" id="dark-theme-toggle" role="radio" aria-checked="false" tabindex="0" aria-label="Dark theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </div>
+                </div>
+                
+                <button class="sound-toggle" id="sound-toggle" aria-label="Toggle sound">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <!-- Initial bot message -->
+                <div class="message bot-message">
+                    <div class="message-bubble">
+                        Hello! I'm MediBot, your healthcare assistant. How can I help you today?
+                    </div>
+                    <div class="timestamp">Just now</div>
+                    <div class="quick-replies">
+                        <button class="quick-reply">Medication reminder</button>
+                        <button class="quick-reply">Symptom checker</button>
+                        <button class="quick-reply">Find a doctor</button>
+                    </div>
+                </div>
+                
+                <!-- Typing indicator -->
+                <div class="typing-indicator" id="typing-indicator">
+                    MediBot is typing<span>.</span><span>.</span><span>.</span>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <form class="chat-input-form" id="chat-form">
+                    <div class="action-buttons">
+                        <button type="button" class="action-button" id="voice-input-button" aria-label="Voice input">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <input 
+                        type="text" 
+                        class="chat-input" 
+                        id="chat-input" 
+                        placeholder="Type your message here..." 
+                        aria-label="Message input"
+                        autocomplete="off"
+                    >
+                    
+                    <button type="submit" class="send-button" aria-label="Send message">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="info-text">
+            MediBot provides general health information only. Always consult with a healthcare professional for medical advice.
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const typingIndicator = document.getElementById('typing-indicator');
+            const lightThemeToggle = document.getElementById('light-theme-toggle');
+            const darkThemeToggle = document.getElementById('dark-theme-toggle');
+            const soundToggle = document.getElementById('sound-toggle');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const controls = document.getElementById('controls');
+            const voiceInputButton = document.getElementById('voice-input-button');
+            
+            let soundEnabled = true;
+            let isListening = false;
+            
+            // Message notification sound
+            const messageSound = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAkJCQkJCQkJCQkJCQkJCQwMDAwMDAwMDAwMDAwMDAwMD//////////////////8AAAA5TEFNRTMuMTAwAZUAAAAAAAAAABSAJAJAQgAAgAAAA2CY7NkiAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAANQAbGUUcQAASI0jg3C0b/DH/Bw9AwFP//+cLn/5P///LhTFP/lwufxMUxT//+XC5/yYp//8uFMU//5cLn/JijEFNRTMuOTkuNaqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq/+MYxBUXW0bZVdYoAs+vw9nqUa1KNLZM5xsB9lrvfbcpObCxLrFvS13Jy/8dzsrklZdl8aCr3///1fXvuuSVl2aGzGAqIq3///9X171zjDINBUdhgKiKuSN65xhkGg1jUdKyQ3ZC2X//6PqZmZ/+MYxAkUi0rxvZ5gAP4p9rGJ6Q5Y5ljqDrxlkupPzE7Yft+Wd2/qZ9aZZ13Z9ZXjrO2s9Z91vrPWes+s9Z9Z9uX42estZ6z6z6z1nrP2SiUbqKMR3bIxHVF4nGyVRRiStHGAMPMAAAIA');
+            
+            // Initialize quick replies
+            initQuickReplies();
+            
+            // Function to initialize quick replies
+            function initQuickReplies() {
+                const quickReplies = document.querySelectorAll('.quick-reply');
+                quickReplies.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const replyText = this.textContent;
+                        
+                        // Add user message
+                        addMessage(replyText, true);
+                        
+                        // Process the message
+                        processUserMessage(replyText);
+                        
+                        // Remove all quick replies after one is clicked
+                        document.querySelectorAll('.quick-replies').forEach(el => {
+                            el.remove();
+                        });
+                    });
+                });
+            }
+            
+            // Function to format current time
+            function formatTime() {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                
+                hours = hours % 12;
+                hours = hours ? hours : 12; // the hour '0' should be '12'
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                
+                return hours + ':' + minutes + ' ' + ampm;
+            }
+
+            // Function to add a message to the chat
+            function addMessage(message, isUser = false, quickReplies = []) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+                messageDiv.style.opacity = '0';
+                
+                const messageBubble = document.createElement('div');
+                messageBubble.className = 'message-bubble';
+                messageBubble.textContent = message;
+                
+                const timestamp = document.createElement('div');
+                timestamp.className = 'timestamp';
+                timestamp.textContent = formatTime();
+                
+                messageDiv.appendChild(messageBubble);
+                messageDiv.appendChild(timestamp);
+                
+                // Add quick replies if provided and not a user message
+                if (!isUser && quickReplies.length > 0) {
+                    const quickRepliesDiv = document.createElement('div');
+                    quickRepliesDiv.className = 'quick-replies';
+                    
+                    quickReplies.forEach(reply => {
+                        const button = document.createElement('button');
+                        button.className = 'quick-reply';
+                        button.textContent = reply;
+                        button.addEventListener('click', () => {
+                            // Handle quick reply click
+                            addMessage(reply, true);
+                            processUserMessage(reply);
+                            
+                            // Remove all quick replies after one is clicked
+                            document.querySelectorAll('.quick-replies').forEach(el => {
+                                el.remove();
+                            });
+                        });
+                        
+                        quickRepliesDiv.appendChild(button);
+                    });
+                    
+                    messageDiv.appendChild(quickRepliesDiv);
+                }
+                
+                // Insert before typing indicator
+                chatMessages.insertBefore(messageDiv, typingIndicator);
+                
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Fade in animation
+                setTimeout(() => {
+                    messageDiv.style.opacity = '1';
+                    
+                    // Play sound for bot messages if enabled
+                    if (!isUser && soundEnabled) {
+                        messageSound.play().catch(e => console.log("Sound play prevented by browser policy"));
+                    }
+                }, 10);
+            }
+
+            // Function to show typing indicator
+            function showTypingIndicator() {
+                typingIndicator.style.display = 'block';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Function to hide typing indicator
+            function hideTypingIndicator() {
+                typingIndicator.style.display = 'none';
+            }
+            
+            // Process user message and get response
+            function processUserMessage(message) {
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Simulate API call - in a real app, this would be an actual fetch
+                setTimeout(() => {
+                    // Hide typing indicator
+                    hideTypingIndicator();
+                    
+                    // Generate a response based on the message
+                    let botResponse;
+                    let quickReplies = [];
+                    
+                    // Simple response logic based on keywords
+                    if (message.toLowerCase().includes('medication') || message.toLowerCase().includes('remind')) {
+                        botResponse = "I can help you set up medication reminders. What medication do you need to track?";
+                        quickReplies = ["Morning medication", "Evening medication", "Multiple medications"];
+                    } 
+                    else if (message.toLowerCase().includes('symptom') || message.toLowerCase().includes('sick') || message.toLowerCase().includes('feel')) {
+                        botResponse = "I can help assess your symptoms. Please describe what you're experiencing.";
+                        quickReplies = ["Headache", "Fever", "Cough", "Stomach pain"];
+                    }
+                    else if (message.toLowerCase().includes('doctor') || message.toLowerCase().includes('find')) {
+                        botResponse = "I can help you find healthcare providers in your area. What type of doctor are you looking for?";
+                        quickReplies = ["Primary care", "Specialist", "Pediatrician", "Urgent care"];
+                    }
+else if (message.toLowerCase().includes('health tip') || message.toLowerCase().includes('advice')) {
+                        botResponse = "Here's a health tip for today: Stay hydrated by drinking at least 8 glasses of water daily. Proper hydration supports numerous bodily functions including digestion, circulation, and temperature regulation.";
+                        quickReplies = ["More tips", "Nutrition advice", "Exercise tips"];
+                    }
+                    else if (message.toLowerCase().includes('headache')) {
+                        botResponse = "Headaches can have many causes including dehydration, stress, eye strain, or lack of sleep. For occasional headaches, try resting in a dark room, applying a cold compress, and staying hydrated. If headaches are severe or persistent, please consult a healthcare provider.";
+                        quickReplies = ["Other symptoms", "Prevention tips", "When to see doctor"];
+                    }
+                    else if (message.toLowerCase().includes('fever')) {
+                        botResponse = "A fever is often a sign your body is fighting an infection. For adults, rest, stay hydrated, and take acetaminophen or ibuprofen if needed. Seek medical attention if your temperature exceeds 103°F (39.4°C) or persists for more than three days.";
+                        quickReplies = ["Fever in children", "COVID symptoms", "Other symptoms"];
+                    }
+                    else if (message.toLowerCase().includes('cough')) {
+                        botResponse = "Coughs can be caused by various factors including allergies, infections, or irritants. Stay hydrated, use a humidifier, and try honey (if over 1 year old). If your cough persists for more than 2 weeks or is accompanied by fever, shortness of breath, or blood, please seek medical attention.";
+                        quickReplies = ["Dry vs. wet cough", "Home remedies", "Cough prevention"];
+                    }
+                    else if (message.toLowerCase().includes('stomach') || message.toLowerCase().includes('pain')) {
+                        botResponse = "Stomach pain can result from indigestion, gas, or more serious conditions. Try avoiding fatty foods, eating smaller meals, and staying hydrated. If pain is severe, persistent, or accompanied by other symptoms like fever or vomiting, please consult a healthcare provider.";
+                        quickReplies = ["Digestive health", "Diet recommendations", "When to worry"];
+                    }
+                    else if (message.toLowerCase().includes('primary care')) {
+                        botResponse = "Primary care physicians provide comprehensive healthcare services. To find one in your area, check with your insurance provider for in-network doctors, read reviews online, or ask friends for recommendations. Would you like me to explain what to look for in a good primary care physician?";
+                        quickReplies = ["What to look for", "First appointment tips", "Insurance questions"];
+                    }
+                    else if (message.toLowerCase().includes('specialist')) {
+                        botResponse = "To find a specialist, start with a referral from your primary care physician. You can also check with your insurance for in-network specialists or use physician finder tools online. What type of specialist are you looking for?";
+                        quickReplies = ["Cardiologist", "Dermatologist", "Neurologist", "Other"];
+                    }
+                    else if (message.toLowerCase().includes('morning medication')) {
+                        botResponse = "I'll help you set up a morning medication reminder. What time would you like to be reminded, and what medication do you need to take?";
+                        quickReplies = ["6:00 AM", "7:00 AM", "8:00 AM", "Custom time"];
+                    }
+                    else if (message.toLowerCase().includes('evening medication')) {
+                        botResponse = "I'll help you set up an evening medication reminder. What time would you like to be reminded, and what medication do you need to take?";
+                        quickReplies = ["6:00 PM", "7:00 PM", "8:00 PM", "Custom time"];
+                    }
+                    else if (message.toLowerCase().includes('multiple medications')) {
+                        botResponse = "I can help you create a schedule for multiple medications. Let's start with your first medication - what is it called and when do you need to take it?";
+                        quickReplies = ["Morning and evening", "Three times daily", "With meals"];
+                    }
+                    else if (message.toLowerCase().includes('exercise') || message.toLowerCase().includes('workout')) {
+                        botResponse = "Regular exercise is essential for good health. The CDC recommends 150 minutes of moderate activity weekly. Start with activities you enjoy, like walking, swimming, or cycling. Would you like some workout ideas for beginners?";
+                        quickReplies = ["Beginner workouts", "Home exercises", "Exercise benefits"];
+                    }
+                    else if (message.toLowerCase().includes('nutrition') || message.toLowerCase().includes('diet')) {
+                        botResponse = "A balanced diet includes plenty of fruits, vegetables, whole grains, lean proteins, and healthy fats. Try to limit processed foods, added sugars, and excessive sodium. Would you like some tips for healthy eating habits?";
+                        quickReplies = ["Healthy meal ideas", "Portion control", "Special diets"];
+                    }
+                    else if (message.toLowerCase().includes('sleep') || message.toLowerCase().includes('insomnia')) {
+                        botResponse = "Quality sleep is crucial for health. Aim for 7-9 hours nightly. Create a relaxing bedtime routine, keep your bedroom cool and dark, and avoid screens before bed. If you struggle with persistent sleep issues, consider consulting a healthcare provider.";
+                        quickReplies = ["Better sleep tips", "Sleep disorders", "Natural remedies"];
+                    }
+                    else if (message.toLowerCase().includes('stress') || message.toLowerCase().includes('anxiety')) {
+                        botResponse = "Managing stress is important for mental and physical health. Try relaxation techniques like deep breathing, meditation, or gentle exercise. If stress is affecting your daily life, consider speaking with a mental health professional.";
+                        quickReplies = ["Quick stress relief", "Meditation basics", "Find a therapist"];
+                    }
+                    else if (message.toLowerCase().includes('thank')) {
+                        botResponse = "You're welcome! I'm here to help with any health-related questions or concerns. Is there anything else I can assist you with today?";
+                        quickReplies = ["Health tips", "Find services", "Wellness check"];
+                    }
+                    else if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi') || message === "hey") {
+                        botResponse = "Hello! I'm MediBot, your healthcare assistant. How can I help you with your health today?";
+                        quickReplies = ["Health information", "Find services", "Track health"];
+                    }
+                    else {
+                        botResponse = "I'm here to help with health-related questions and concerns. Would you like information about symptoms, medications, finding healthcare providers, or general health tips?";
+                        quickReplies = ["Symptom checker", "Medication help", "Find a doctor", "Health tips"];
+                    }
+                    
+                    // Add bot message with response
+                    addMessage(botResponse, false, quickReplies);
+                }, 1500); // Simulate typing delay
+            }
+
+            // Handle form submission
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const message = chatInput.value.trim();
+                
+                // Only process non-empty messages
+                if (message) {
+                    // Add user message
+                    addMessage(message, true);
+                    
+                    // Clear input
+                    chatInput.value = '';
+                    
+                    // Process the message
+                    processUserMessage(message);
+                }
+            });
+
+            // Toggle theme
+            function toggleTheme() {
+                document.body.classList.toggle('dark-theme');
+                
+                // Update aria states and active classes
+                const isDarkTheme = document.body.classList.contains('dark-theme');
+                lightThemeToggle.classList.toggle('active', !isDarkTheme);
+                darkThemeToggle.classList.toggle('active', isDarkTheme);
+                lightThemeToggle.setAttribute('aria-checked', !isDarkTheme);
+                darkThemeToggle.setAttribute('aria-checked', isDarkTheme);
+            }
+
+            lightThemeToggle.addEventListener('click', function() {
+                if (document.body.classList.contains('dark-theme')) {
+                    toggleTheme();
+                }
+            });
+
+            darkThemeToggle.addEventListener('click', function() {
+                if (!document.body.classList.contains('dark-theme')) {
+                    toggleTheme();
+                }
+            });
+
+            // Toggle sound
+            soundToggle.addEventListener('click', function() {
+                soundEnabled = !soundEnabled;
+                
+                // Update icon
+                if (soundEnabled) {
+                    this.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                        </svg>
+                    `;
+                    this.setAttribute('aria-label', 'Mute sound');
+                } else {
+                    this.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                            <line x1="23" y1="9" x2="17" y2="15"></line>
+                            <line x1="17" y1="9" x2="23" y2="15"></line>
+                        </svg>
+                    `;
+                    this.setAttribute('aria-label', 'Enable sound');
+                }
+            });
+
+            // Mobile menu toggle
+            mobileMenuButton.addEventListener('click', function() {
+                controls.classList.toggle('show');
+            });
+
+            // Handle voice input - simulated
+            voiceInputButton.addEventListener('click', function() {
+                if (!isListening) {
+                    isListening = true;
+                    
+                    // Create voice recording animation
+                    const voiceRecording = document.createElement('div');
+                    voiceRecording.className = 'voice-recording';
+                    voiceRecording.innerHTML = `
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                    `;
+                    
+                    // Change button appearance
+                    this.style.color = 'var(--primary-color)';
+                    this.appendChild(voiceRecording);
+                    
+                    // Set status text
+                    chatInput.placeholder = "Listening...";
+                    
+                    // Simulate voice recognition
+                    setTimeout(() => {
+                        // Sample voice input messages
+                        const voiceInputs = [
+                            "I have a headache",
+                            "How do I find a doctor near me",
+                            "Can you give me a health tip",
+                            "I need help with medication reminders"
+                        ];
+                        
+                        // Select a random voice input
+                        const randomVoiceInput = voiceInputs[Math.floor(Math.random() * voiceInputs.length)];
+                        
+                        // Set the input value
+                        chatInput.value = randomVoiceInput;
+                        
+                        // Stop listening
+                        isListening = false;
+                        
+                        // Reset button appearance
+                        this.style.color = '';
+                        if (voiceRecording) {
+                            voiceRecording.remove();
+                        }
+                        
+                        // Reset placeholder
+                        chatInput.placeholder = "Type your message here...";
+                        
+                        // Submit the form
+                        chatForm.dispatchEvent(new Event('submit'));
+                    }, 3000);
+                } else {
+                    // Stop listening
+                    isListening = false;
+                    
+                    // Reset button appearance
+                    this.style.color = '';
+                    const voiceRecording = this.querySelector('.voice-recording');
+                    if (voiceRecording) {
+                        voiceRecording.remove();
+                    }
+                    
+                    // Reset placeholder
+                    chatInput.placeholder = "Type your message here...";
+                }
+            });
+
+            // Focus input on load
+            chatInput.focus();
+
+            // Initialize accessibility for theme toggles
+            lightThemeToggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (document.body.classList.contains('dark-theme')) {
+                        toggleTheme();
+                    }
+                }
+            });
+
+            darkThemeToggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (!document.body.classList.contains('dark-theme')) {
+                        toggleTheme();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
